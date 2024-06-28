@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "separation-detection"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+torch = {url = "https://download.pytorch.org/whl/cu121/torch-2.2.2%2Bcu121-cp311-cp311-win_amd64.whl"}
+torchaudio = {url = "https://download.pytorch.org/whl/cu121/torchaudio-2.2.2%2Bcu121-cp311-cp311-win_amd64.whl"}
+torchvision = {url = "https://download.pytorch.org/whl/cu121/torchvision-0.17.2%2Bcu121-cp311-cp311-win_amd64.whl"}
+librosa = "^0.10.2.post1"
+pandas = "^2.2.2"
+soundfile = "^0.12.1"
+hvplot = "^0.10.0"
+lightning = "^2.3.0"
+torchserve = "^0.11.0"
+torchmetrics = "^1.4.0.post0"
+dask = "^2024.6.2"
+sphinx = "^7.3.7"
+tomli-w = "^1.0.0"
+scikit-learn = "^1.5.0"
+onnx = "^1.16.1"
+onnxruntime = "^1.18.0"
+jupyterlab = "^4.2.3"
+numpy = "1.26.0"
+scipy = "^1.14.0"
+
+[virutalenvs]
+in-project = true
+path = ".venv"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
