@@ -1,13 +1,8 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import pytorch_lightning as pl
-import torchaudio
-import numpy as np
-import librosa
-import matplotlib.pyplot as plt
-import os
 
+import os
+import librosa
+import numpy as np
+import cv2
 
 def load_audio(audio_path):
     y, sr = librosa.load(audio_path)
@@ -39,25 +34,35 @@ def get_all_features(y, sr, n_fft=2048, hop_length=512, n_mels=128, n_mfcc=13):
         'chromagram': get_chromagram(y, sr, n_fft=n_fft, hop_length=hop_length)
     }
 
-def get_frames(spectrogram, frame_length, hop_length):
+def get_frames(spectrogram, frame_length, hop_length, target_size=(256, 256)):
     frames = []
     for i in range(0, spectrogram.shape[1] - frame_length + 1, hop_length):
         frame = spectrogram[:, i:i+frame_length]
         if frame.shape[1] < frame_length:
             pad_width = frame_length - frame.shape[1]
             frame = np.pad(frame, ((0, 0), (0, pad_width)), mode='constant')
-        frames.append(frame)
+            
+        # Normalize to 0-255 range for cv2
+        frame_normalized = ((frame - frame.min()) / (frame.max() - frame.min()) * 255).astype(np.uint8)
+        
+        # Resize using cv2
+        frame_resized = cv2.resize(frame_normalized, target_size, interpolation=cv2.INTER_LINEAR)
+        
+        # Normalize back to 0-1 range
+        frame_resized = frame_resized.astype(np.float32) / 255.0
+        
+        frames.append(frame_resized)
     return np.array(frames)
 
-def get_spectrogram_frames(y, sr, n_fft=2048, hop_length=512):
+def get_spectrogram_frames(y, sr, n_fft=2048, hop_length=512, target_size=(256, 256)):
     S_db = get_spectrogram(y, sr, n_fft=n_fft, hop_length=hop_length)
     frame_length = n_fft // 2 + 1
-    return get_frames(S_db, frame_length, hop_length)
+    return get_frames(S_db, frame_length, hop_length, target_size)
 
-def get_mel_spectrogram_frames(y, sr, n_fft=2048, hop_length=512, n_mels=128):
+def get_mel_spectrogram_frames(y, sr, n_fft=2048, hop_length=512, n_mels=128, target_size=(256, 256)):
     mel_S_db = get_mel_spectrogram(y, sr, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels)
     frame_length = n_mels  # mel 스펙트로그램의 경우 주파수 축이 n_mels
-    return get_frames(mel_S_db, frame_length, hop_length)
+    return get_frames(mel_S_db, frame_length, hop_length, target_size)
 
 
 def get_patch(audio_paths, patch_size=128, step=64):
@@ -83,56 +88,4 @@ def rename_files(path):
             new_file_name = file[:-4]  # Remove the last 4 characters (.wav)
             os.rename(os.path.join(path, file), os.path.join(path, new_file_name))
             print(new_file_name)
-
-
-
-# 데이터 로딩 및 전처리
-class VocalDataset(torch.utils.data.Dataset):
-    def __init__(self, file_list, labels):
-        self.file_list = file_list
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.file_list)
-
-    def __getitem__(self, idx):
-        waveform, sample_rate = torchaudio.load(self.file_list[idx])
-        spectrogram = torchaudio.transforms.Spectrogram()(waveform)
-        return spectrogram, self.labels[idx]
-
-
-
-
-# 데이터 경로 설정
-data_path = r'C:\data\Music\musdb18hq\vocals\train'
-bsro_sep_data_path = r'C:\data\Music\musdb18hq\mixture\train\BS-Roformer-1297'
-inst_sep_data_path = r'C:\data\Music\musdb18hq\mixture\train\instVoc'
-melro_sep_data_path = r'C:\data\Music\musdb18hq\mixture\train\Mel-Roformer'
-
-melro_covert_vocal_path = r'C:\data\Music\musdb18hq\mixture\train\Mel-Roformer\convert'
-inst_convert_vocal_path = r'C:\data\Music\musdb18hq\mixture\train\instVoc\convert'
-bsro_convert_vocal_path = r'C:\data\Music\musdb18hq\mixture\train\BS-Roformer-1297\convert'
-
-
-
-# # 패치 생성
-# patches = create_dataset([data_path])
-
-# # 일부 패치 이미지로 저장 (예: 처음 5개)
-# for i in range(min(5, len(patches))):
-#     plt.figure(figsize=(3, 3))
-#     plt.imshow(patches[i].squeeze(), cmap='viridis', aspect='auto')
-#     plt.colorbar(format='%+2.0f dB')
-#     plt.title(f'Patch {i+1}')
-#     plt.tight_layout()
-#     plt.savefig(os.path.join(save_dir, f'patch_{i+1}.png'))
-#     plt.close()
-
-# # 패치 numpy 배열로 저장
-# np.save(os.path.join(save_dir, 'patches.npy'), patches)
-
-# 예제 데이터 로드 및 스펙트로그램 생성
-# audio_paths = ['example1.wav', 'example2.wav']
-# dataset_normal = create_dataset(audio_paths, patch_size=128, step=64)
-# dataset_normal = dataset_normal.transpose(0, 3, 1, 2)  # (N, 1, H, W) 형태로 변환
 
