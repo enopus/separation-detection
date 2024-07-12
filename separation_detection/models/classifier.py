@@ -7,14 +7,19 @@ import torchvision.models as models
 from torchvision.models import vit_b_16
 import torch.nn as nn
 import torch.optim as optim
-
+import torchmetrics
 
 class BaseAudioClassifier(pl.LightningModule):
     def __init__(self, num_classes=2):
         super().__init__()
         self.model = self.setup_model()  # Placeholder, will be defined in derived classes
         self.num_classes = num_classes
-
+        self.precision = torchmetrics.Precision(num_classes=num_classes)
+        self.recall = torchmetrics.Recall(num_classes=num_classes)
+        self.f1 = torchmetrics.F1(num_classes=num_classes)
+        self.train_acc = torchmetrics.Accuracy()
+        self.val_acc = torchmetrics.Accuracy()
+        self.test_acc = torchmetrics.Accuracy()
 
     def setup_model(self):
         raise NotImplementedError("This method should be implemented in derived classes")
@@ -27,6 +32,7 @@ class BaseAudioClassifier(pl.LightningModule):
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
         self.log('train_loss', loss)
+        self.log('train_acc', self.train_acc(y_hat, y), prog_bar=True)
         return loss
     
     def validation_step(self, batch):
@@ -34,6 +40,10 @@ class BaseAudioClassifier(pl.LightningModule):
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
         self.log('val_loss', loss)
+        self.log('val_acc', self.val_acc(y_hat, y), prog_bar=True)
+        self.log('val_precision', self.precision(y_hat, y), prog_bar=True)
+        self.log('val_recall', self.recall(y_hat, y), prog_bar=True)
+        self.log('val_f1', self.f1(y_hat, y), prog_bar=True)
         return loss
     
     def test_step(self, batch):
@@ -41,6 +51,10 @@ class BaseAudioClassifier(pl.LightningModule):
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
         self.log('test_loss', loss)
+        self.log('test_acc', self.test_acc(y_hat, y), prog_bar=True)
+        self.log('test_precision', self.precision(y_hat, y), prog_bar=True)
+        self.log('test_recall', self.recall(y_hat, y), prog_bar=True)
+        self.log('test_f1', self.f1(y_hat, y), prog_bar=True)
         return loss
     
     def configure_optimizers(self):
