@@ -62,40 +62,31 @@ class BaseAudioClassifier(pl.LightningModule):
         return optimizer
 
 
-class ResNet18AudioClassifier(BaseAudioClassifier):
+class ResNet50AudioClassifier(BaseAudioClassifier):
     def setup_model(self):
-        self.model = models.resnet18(pretrained=True)
-        self.model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, self.num_classes)
+        model = models.resnet50(weights="IMAGENET1K_V2")
+        model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        num_features = model.fc.in_features
+        model.fc = nn.Linear(num_features, self.num_classes)
+        return model
 
-class ResNet34AudioClassifier(BaseAudioClassifier):
+class EfficientNetV2Classifier(BaseAudioClassifier):
     def setup_model(self):
-        self.model = models.resnet34(pretrained=True)
-        self.model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        num_features = self.model.fc.in_features
-        self.model.fc = nn.Linear(num_features, self.num_classes)
+        model = models.efficientnet_v2_m(weights="IMAGENET1K_V1")
+        model.features[0][0] = nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1, bias=False)
+        model.classifier[1] = nn.Linear(1280, self.num_classes)
+        return model
 
-class EfficientNetClassifier(BaseAudioClassifier):
+class DenseNet169Classifier(BaseAudioClassifier):
     def setup_model(self):
-        self.model = models.efficientnet_b0(pretrained=True)
-        self.model.features[0][0] = nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1, bias=False)
-        self.model.classifier[1] = nn.Linear(1280, self.num_classes)
+        model = models.densenet169(weights="IMAGENET1K_V1")
+        model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        model.classifier = nn.Linear(1024, self.num_classes)
+        return model
 
-class MobileNetV3Classifier(BaseAudioClassifier):
+class SwinTransformerV2(BaseAudioClassifier):
     def setup_model(self):
-        self.model = models.mobilenet_v3_small(pretrained=True)
-        self.model.features[0][0] = nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1, bias=False)
-        self.model.classifier[3] = nn.Linear(1024, self.num_classes)
-
-class DenseNetClassifier(BaseAudioClassifier):
-    def setup_model(self):
-        self.model = models.densenet121(pretrained=True)
-        self.model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        self.model.classifier = nn.Linear(1024, self.num_classes)
-
-class ViTClassifier(BaseAudioClassifier):
-    def setup_model(self):
-        self.model = vit_b_16(pretrained=True)
-        self.model.conv_proj = nn.Conv2d(1, 768, kernel_size=16, stride=16)
-        self.model.heads.head = nn.Linear(768, self.num_classes)
+        model = models.swin_v2_b(weights="IMAGENET1K_V1")
+        model.features[0][0] = nn.Conv2d(1, 768, kernel_size=16, stride=16, bias=False)
+        model.heads.head = nn.Linear(768, self.num_classes)
+        return model
