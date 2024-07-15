@@ -5,6 +5,7 @@ import librosa
 import matplotlib.pyplot as plt
 import os
 import pytorch_lightning as pl
+import natsort
 from torch.utils.data import DataLoader, Dataset, random_split
 
 
@@ -16,27 +17,38 @@ class AudioDataset(Dataset):
         self.original_dir = os.path.join(self.root_dir, 'original')
         self.transform = transform
         
-        self.converted_files = sorted(os.listdir(self.converted_dir))
-        self.original_files = sorted(os.listdir(self.original_dir))
+        self.converted_files = natsort.natsorted(os.listdir(self.converted_dir))
+        self.original_files = natsort.natsorted(os.listdir(self.original_dir))
+        
+        self.converted_labels = [1] * len(self.converted_files)
+        self.original_labels = [0] * len(self.original_files)
+
+        self.files = self.converted_files + self.original_files
+        self.labels = self.converted_labels + self.original_labels
+        
+        # Calculate the total number of frames
+        self.total_frames = 0
+        self.frame_indices = []
+        for i, file in enumerate(self.files):
+            file_path = os.path.join(self.converted_dir, file) if self.labels[i] == 1 else os.path.join(self.original_dir, file)
+            data = np.load(file_path)
+            num_frames = data.shape[0]
+            self.frame_indices.extend([(i, j) for j in range(num_frames)])
+            self.total_frames += num_frames
         
     def __len__(self):
-        return len(self.converted_files) + len(self.original_files)
+        return self.total_frames
     
     def __getitem__(self, idx):
-        if idx < len(self.converted_files):
-            file_path = os.path.join(self.converted_dir, self.converted_files[idx])
-            label = 1  # Converted
-        else:
-            idx -= len(self.converted_files)
-            file_path = os.path.join(self.original_dir, self.original_files[idx])
-            label = 0  # Original
-        
+        file_idx, frame_idx = self.frame_indices[idx]
+        file_path = os.path.join(self.converted_dir, self.files[file_idx]) if self.labels[file_idx] == 1 else os.path.join(self.original_dir, self.files[file_idx])
         data = np.load(file_path)
-        
+        frame_data = data[frame_idx]
         if self.transform:
-            data = self.transform(data)
+            frame_data = self.transform(frame_data)
         
-        return torch.from_numpy(data).float(), label
+        return torch.from_numpy(frame_data).float().unsqueeze(0), self.labels[file_idx]
+
 
 class AudioDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size=32, num_workers=4):

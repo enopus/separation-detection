@@ -31,7 +31,6 @@ class AudioModelTrainer:
         # Initialize the Trainer
         self.trainer = pl.Trainer(
             max_epochs=config['max_epochs'],
-            gpus=config['gpus'],
             accelerator=config['accelerator'],
             logger=logger,
             callbacks=[checkpoint_callback, early_stop_callback],

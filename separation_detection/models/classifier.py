@@ -12,14 +12,14 @@ import torchmetrics
 class BaseAudioClassifier(pl.LightningModule):
     def __init__(self, num_classes=2):
         super().__init__()
-        self.model = self.setup_model()  # Placeholder, will be defined in derived classes
         self.num_classes = num_classes
-        self.precision = torchmetrics.Precision(num_classes=num_classes)
-        self.recall = torchmetrics.Recall(num_classes=num_classes)
-        self.f1 = torchmetrics.F1(num_classes=num_classes)
-        self.train_acc = torchmetrics.Accuracy()
-        self.val_acc = torchmetrics.Accuracy()
-        self.test_acc = torchmetrics.Accuracy()
+        self.model = self.setup_model()  # Placeholder, will be defined in derived classes
+        self.precision = torchmetrics.Precision(task="multiclass", num_classes=num_classes)
+        self.recall = torchmetrics.Recall(task="multiclass", num_classes=num_classes)
+        self.f1 = torchmetrics.F1Score(task="multiclass", num_classes=num_classes)
+        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
 
     def setup_model(self):
         raise NotImplementedError("This method should be implemented in derived classes")
@@ -73,7 +73,7 @@ class ResNet50AudioClassifier(BaseAudioClassifier):
 class EfficientNetV2Classifier(BaseAudioClassifier):
     def setup_model(self):
         model = models.efficientnet_v2_m(weights="IMAGENET1K_V1")
-        model.features[0][0] = nn.Conv2d(1, 32, kernel_size=3, stride=2, padding=1, bias=False)
+        model.features[0][0] = nn.Conv2d(1, 24, kernel_size=3, stride=2, padding=1, bias=False)
         model.classifier[1] = nn.Linear(1280, self.num_classes)
         return model
 
@@ -81,12 +81,13 @@ class DenseNet169Classifier(BaseAudioClassifier):
     def setup_model(self):
         model = models.densenet169(weights="IMAGENET1K_V1")
         model.features.conv0 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        model.classifier = nn.Linear(1024, self.num_classes)
+        num_ftrs = model.classifier.in_features  # This will be 1664 for DenseNet169
+        model.classifier = nn.Linear(num_ftrs, self.num_classes)
         return model
 
 class SwinTransformerV2(BaseAudioClassifier):
     def setup_model(self):
         model = models.swin_v2_b(weights="IMAGENET1K_V1")
         model.features[0][0] = nn.Conv2d(1, 768, kernel_size=16, stride=16, bias=False)
-        model.heads.head = nn.Linear(768, self.num_classes)
+        model.head = nn.Linear(768, self.num_classes)
         return model
