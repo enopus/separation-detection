@@ -5,7 +5,7 @@ import librosa
 import numpy as np
 import cv2
 import separation_detection
-import separation_detection.data.datasets as datasets
+import separation_detection.utils.preprocess as datasets
 
 def rename_file(file_path):
     directory_list = os.listdir(file_path)
@@ -124,32 +124,36 @@ sep_path_test = r'C:\data\Music\musdb18hq\mixture\test\BS-Roformer-1297'
 convert_roformer_path_train = r'C:\data\Music\musdb18hq\mixture\train\BS-Roformer-1297\convert'
 convert_roformer_path_test = r'C:\data\Music\musdb18hq\mixture\test\BS-Roformer-1297\convert'
             
-# original_audio_train = load_audio_files(original_path_train)            
-# original_audio_test = load_audio_files(original_path_test)
-            
-# convert_audio_files_to_spectrum(original_audio_train, result_path_train)
-# convert_audio_files_to_spectrum(original_audio_test, result_path_test)
-
-# print("===================================== End of the Original data ======================================")
-
-# sep_audio_train = load_audio_files(sep_path_train)
-# sep_audio_test = load_audio_files(sep_path_test)
-
-# convert_audio_files_to_spectrum(sep_audio_train, result_sep_path_train)
-# convert_audio_files_to_spectrum(sep_audio_test, result_sep_path_test)
-
-# print("===================================== End of the Separated data ======================================")
-
-# convert_audio_train = load_audio_files(convert_roformer_path_train)
-# convert_audio_test = load_audio_files(convert_roformer_path_test)
-
-# convert_audio_files_to_spectrum(convert_audio_train, result_convert_path_train)
-# convert_audio_files_to_spectrum(convert_audio_test, result_convert_path_test)
 
 
-# # Usage
-original_dir = r'C:\data\Music\musdb18hq\result\train\original'
-# sep_dir = r'C:\data\Music\musdb18hq\result\train\sep'
-convert_dir = r'C:\data\Music\musdb18hq\result\train\convert'
-# rename_sep_files(original_dir, sep_dir)
-rename_sep_files(original_dir, convert_dir)
+if __name__ == "__main__":
+
+    a = 4 
+    # original_audio_train = load_audio_files(original_path_train)            
+    # original_audio_test = load_audio_files(original_path_test)
+                
+    # convert_audio_files_to_spectrum(original_audio_train, result_path_train)
+    # convert_audio_files_to_spectrum(original_audio_test, result_path_test)
+
+    # print("===================================== End of the Original data ======================================")
+
+    # sep_audio_train = load_audio_files(sep_path_train)
+    # sep_audio_test = load_audio_files(sep_path_test)
+
+    # convert_audio_files_to_spectrum(sep_audio_train, result_sep_path_train)
+    # convert_audio_files_to_spectrum(sep_audio_test, result_sep_path_test)
+
+    # print("===================================== End of the Separated data ======================================")
+
+    # convert_audio_train = load_audio_files(convert_roformer_path_train)
+    # convert_audio_test = load_audio_files(convert_roformer_path_test)
+
+    # convert_audio_files_to_spectrum(convert_audio_train, result_convert_path_train)
+    # convert_audio_files_to_spectrum(convert_audio_test, result_convert_path_test)
+
+    # # Usage
+    original_dir = r'C:\data\Music\musdb18hq\result\test\original'
+    sep_dir = r'C:\data\Music\musdb18hq\result\test\sep'
+    convert_dir = r'C:\data\Music\musdb18hq\result\test\convert'
+    rename_sep_files(original_dir, sep_dir)
+    rename_sep_files(original_dir, convert_dir)

@@ -52,23 +52,35 @@ convert_train_mel_spectrogram_path = r'C:\data\Music\musdb18hq\result\train\conv
 convert_train_mfcc_path = r'C:\data\Music\musdb18hq\result\train\convert\mfcc'
 convert_train_chromagram_path = r'C:\data\Music\musdb18hq\result\train\convert\chromagram'
 
+convert_test_spectrogram_path = r'C:\data\Music\musdb18hq\result\test\convert\spectrogram'
+convert_test_mel_spectrogram_path = r'C:\data\Music\musdb18hq\result\test\convert\mel_spectrogram'
+convert_test_mfcc_path = r'C:\data\Music\musdb18hq\result\test\convert\mfcc'
+convert_test_chromagram_path = r'C:\data\Music\musdb18hq\result\test\convert\chromagram'
 
 
-spectrum_to_image(original_train_spectrogram_path)
-spectrum_to_image(original_train_mel_spectrogram_path)
-print('Converting original_train End')
 
-spectrum_to_image(original_test_spectrogram_path)
-spectrum_to_image(original_test_mel_spectrogram_path)
-print('Converting original_test End')
+# spectrum_to_image(original_train_spectrogram_path)
+# spectrum_to_image(original_train_mel_spectrogram_path)
+# print('Converting original_train End')
 
-spectrum_to_image(sep_train_spectrogram_path)
-spectrum_to_image(sep_train_mel_spectrogram_path)
+# spectrum_to_image(original_test_spectrogram_path)
+# spectrum_to_image(original_test_mel_spectrogram_path)
+# print('Converting original_test End')
 
-print('Converting sep_train End')
+# spectrum_to_image(sep_train_spectrogram_path)
+# spectrum_to_image(sep_train_mel_spectrogram_path)
+
+# print('Converting sep_train End')
 
 
-spectrum_to_image(convert_train_spectrogram_path)
-spectrum_to_image(convert_train_mel_spectrogram_path)
+# spectrum_to_image(convert_train_spectrogram_path)
+# spectrum_to_image(convert_train_mel_spectrogram_path)
 
-print('Converting convert_train End')
+# print('Converting convert_train End')
+
+
+
+spectrum_to_image(convert_test_spectrogram_path)
+spectrum_to_image(convert_test_mel_spectrogram_path)
+
+print('Converting convert_test End')
