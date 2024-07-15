@@ -20,6 +20,7 @@ class AudioDataset(Dataset):
         self.converted_files = natsort.natsorted(os.listdir(self.converted_dir))
         self.original_files = natsort.natsorted(os.listdir(self.original_dir))
         
+        
         self.converted_labels = [1] * len(self.converted_files)
         self.original_labels = [0] * len(self.original_files)
 
@@ -49,7 +50,6 @@ class AudioDataset(Dataset):
         
         return torch.from_numpy(frame_data).float().unsqueeze(0), self.labels[file_idx]
 
-
 class AudioDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, batch_size=32, num_workers=4):
         super().__init__()
@@ -68,8 +68,28 @@ class AudioDataModule(pl.LightningDataModule):
                 generator=torch.Generator().manual_seed(seed)  # for reproducibility
             )
         
+            train_counts = self._count_labels(self.train_dataset)
+            val_counts = self._count_labels(self.val_dataset)
+            
+            print(f"Training samples: {len(self.train_dataset)}")
+            print(f"Validation samples: {len(self.val_dataset)}")
+            print(f"Training label counts: {train_counts}")
+            print(f"Validation label counts: {val_counts}")
+        
         if stage == 'test' or stage is None:
             self.test_dataset = AudioDataset(self.data_dir, subset='test')
+            test_counts = self._count_labels(self.test_dataset)
+            
+            print(f"Test samples: {len(self.test_dataset)}")
+            print(f"Test label counts: {test_counts}")
+
+    def _count_labels(self, dataset):
+        counts = {0: 0, 1: 0}
+        for data, label in DataLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers):
+            for lbl in label:
+                counts[lbl.item()] += 1
+        return counts
+
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)

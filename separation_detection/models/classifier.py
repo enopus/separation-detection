@@ -14,12 +14,12 @@ class BaseAudioClassifier(pl.LightningModule):
         super().__init__()
         self.num_classes = num_classes
         self.model = self.setup_model()  # Placeholder, will be defined in derived classes
-        self.precision = torchmetrics.Precision(task="multiclass", num_classes=num_classes)
-        self.recall = torchmetrics.Recall(task="multiclass", num_classes=num_classes)
-        self.f1 = torchmetrics.F1Score(task="multiclass", num_classes=num_classes)
-        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+        self.precision = torchmetrics.Precision(task="BINARY", num_classes=num_classes)
+        self.recall = torchmetrics.Recall(task="BINARY", num_classes=num_classes)
+        self.f1 = torchmetrics.F1Score(task="BINARY", num_classes=num_classes)
+        self.train_acc = torchmetrics.Accuracy(task="BINARY", num_classes=num_classes)
+        self.val_acc = torchmetrics.Accuracy(task="BINARY", num_classes=num_classes)
+        self.test_acc = torchmetrics.Accuracy(task="BINARY", num_classes=num_classes)
 
     def setup_model(self):
         raise NotImplementedError("This method should be implemented in derived classes")
@@ -31,30 +31,33 @@ class BaseAudioClassifier(pl.LightningModule):
         x, y = batch
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
+        preds = torch.argmax(y_hat, dim=1)
         self.log('train_loss', loss)
-        self.log('train_acc', self.train_acc(y_hat, y), prog_bar=True)
+        self.log('train_acc', self.train_acc(preds, y), prog_bar=True)
         return loss
     
     def validation_step(self, batch):
         x, y = batch
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
+        preds = torch.argmax(y_hat, dim=1)
         self.log('val_loss', loss)
-        self.log('val_acc', self.val_acc(y_hat, y), prog_bar=True)
-        self.log('val_precision', self.precision(y_hat, y), prog_bar=True)
-        self.log('val_recall', self.recall(y_hat, y), prog_bar=True)
-        self.log('val_f1', self.f1(y_hat, y), prog_bar=True)
+        self.log('val_acc', self.val_acc(preds, y), prog_bar=True)
+        self.log('val_precision', self.precision(preds, y), prog_bar=True)
+        self.log('val_recall', self.recall(preds, y), prog_bar=True)
+        self.log('val_f1', self.f1(preds, y), prog_bar=True)
         return loss
     
     def test_step(self, batch):
         x, y = batch
         y_hat = self(x)
         loss = nn.CrossEntropyLoss()(y_hat, y)
+        preds = torch.argmax(y_hat, dim=1)
         self.log('test_loss', loss)
-        self.log('test_acc', self.test_acc(y_hat, y), prog_bar=True)
-        self.log('test_precision', self.precision(y_hat, y), prog_bar=True)
-        self.log('test_recall', self.recall(y_hat, y), prog_bar=True)
-        self.log('test_f1', self.f1(y_hat, y), prog_bar=True)
+        self.log('test_acc', self.test_acc(preds, y), prog_bar=True)
+        self.log('test_precision', self.precision(preds, y), prog_bar=True)
+        self.log('test_recall', self.recall(preds, y), prog_bar=True)
+        self.log('test_f1', self.f1(preds, y), prog_bar=True)
         return loss
     
     def configure_optimizers(self):
