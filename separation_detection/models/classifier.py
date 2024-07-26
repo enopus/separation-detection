@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchmetrics
 
+
 class BaseAudioClassifier(pl.LightningModule):
     def __init__(self, num_classes=2):
         super().__init__()
@@ -46,6 +47,8 @@ class BaseAudioClassifier(pl.LightningModule):
         self.log('val_precision', self.precision(preds, y), prog_bar=True)
         self.log('val_recall', self.recall(preds, y), prog_bar=True)
         self.log('val_f1', self.f1(preds, y), prog_bar=True)
+        self.log('test number', 0, prog_bar=True)
+        self.log('test number2', 0, prog_bar=False)
         return loss
     
     def test_step(self, batch):
@@ -58,6 +61,8 @@ class BaseAudioClassifier(pl.LightningModule):
         self.log('test_precision', self.precision(preds, y), prog_bar=True)
         self.log('test_recall', self.recall(preds, y), prog_bar=True)
         self.log('test_f1', self.f1(preds, y), prog_bar=True)
+        self.log('value test', 4, prog_bar=True)
+        self.log('value test2', 5, prog_bar=False)
         return loss
     
     def configure_optimizers(self):

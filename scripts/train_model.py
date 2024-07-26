@@ -9,7 +9,7 @@ def main():
         'data_dir': r'C:\data\Music\musdb18hq\model_data',
         'batch_size': 32,
         'num_workers': 4,
-        'max_epochs': 100,
+        'max_epochs': 5,
         'accelerator': 'gpu',  # Use 'ddp' for multi-GPU training
         'precision': 16,  # Mixed precision training
         'gradient_clip_val': 0.5,
